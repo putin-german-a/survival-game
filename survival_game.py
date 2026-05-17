@@ -78,10 +78,12 @@ class Player:
         self.y             = self.SPAWN_Y
         self.inv           = False
         self.inv_t         = 0
+        self.inv_dur       = INV_MS
         self.parrying      = False
         self.parry_t       = 0
         self.parry_cd_t    = -PARRY_CD_MS
-        self.charges = 0
+        self.charges       = 0
+        self.shoot_cd_t    = -SHOOT_CD_MS
 
     def teleport_start(self):
         self.x = self.SPAWN_X
