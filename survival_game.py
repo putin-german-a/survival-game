@@ -5,53 +5,81 @@ import sys
 
 pygame.init()
 
-# --- Constants ---
-WIDTH, HEIGHT   = 900, 600
-FPS             = 60
+WIDTH, HEIGHT = 900, 600
+FPS           = 60
 
-BG         = (20, 22, 35)
-C_PLAYER   = (80, 160, 255)
-C_OUTLINE  = (200, 230, 255)
-C_SQUARE   = (220, 60, 60)
-C_SQ_OUT   = (255, 130, 130)
-C_GOAL     = (60, 220, 100)
-C_HEART    = (220, 50, 50)
-C_HEART_E  = (70, 35, 35)
-C_WHITE    = (255, 255, 255)
-C_DIM      = (150, 150, 170)
-C_YELLOW   = (255, 215, 50)
+BG          = (20, 22, 35)
+C_PLAYER    = (80, 160, 255)
+C_OUTLINE   = (200, 230, 255)
+C_SQUARE    = (220, 60, 60)
+C_SQ_OUT    = (255, 130, 130)
+C_SQ_FRZ    = (70, 90, 220)
+C_SQ_FRZ_O  = (130, 150, 255)
+C_BOSS      = (200, 20, 20)
+C_BOSS_OUT  = (255, 85, 85)
+C_HEART     = (220, 50, 50)
+C_HEART_E   = (70, 35, 35)
+C_WHITE     = (255, 255, 255)
+C_DIM       = (150, 150, 170)
+C_YELLOW    = (255, 215, 50)
+C_PARRY     = (80, 255, 180)
+C_GREEN     = (60, 220, 100)
 
-PLAYER_R    = 16
-PLAYER_SPD  = 4.5
-SQ_SIZE     = 32
-SQ_BASE_V   = 2.3
-INV_MS      = 2000          # invincibility duration in ms
+PLAYER_R   = 16
+PLAYER_SPD = 4.5
+SQ_SIZE    = 32
+SQ_BASE_V  = 2.3
+INV_MS     = 500   # 0.5s i-frames
+PARRY_MS   = 1000  # 1s parry window
+FREEZE_MS  = 5000  # 5s square freeze after parry
 
-TOTAL_LEVELS = 5
-SQUARES_PER  = [8, 11, 15, 19, 24]   # squares per level
-GOAL_X       = WIDTH - 28             # x position of the goal line
+BOSS_SIZE   = 90
+BOSS_MAX_HP = 5
+
+# Squares count per boss HP stage (mirrors original 5-level progression)
+SQ_COUNT = {5: 8, 4: 11, 3: 15, 2: 19, 1: 24}
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Survival")
+pygame.display.set_caption("Survival — Boss Fight")
 clock = pygame.time.Clock()
 
 F_TITLE = pygame.font.SysFont(None, 84)
+F_BIG   = pygame.font.SysFont(None, 56)
 F_MED   = pygame.font.SysFont(None, 40)
 F_SM    = pygame.font.SysFont(None, 28)
+F_TINY  = pygame.font.SysFont(None, 22)
 
-
-# --- Player ---
 
 class Player:
-    def __init__(self):
-        self.lives = 3
-        self.reset()
+    SPAWN_X = float(PLAYER_R + 44)
+    SPAWN_Y = float(HEIGHT / 2)
 
-    def reset(self):
-        self.x = float(PLAYER_R + 44)
-        self.y = float(HEIGHT / 2)
-        self.inv   = False
-        self.inv_t = 0
+    def __init__(self):
+        self.lives    = 3
+        self.x        = self.SPAWN_X
+        self.y        = self.SPAWN_Y
+        self.inv      = False
+        self.inv_t    = 0
+        self.parrying = False
+        self.parry_t  = 0
+
+    def teleport_start(self):
+        self.x = self.SPAWN_X
+        self.y = self.SPAWN_Y
+
+    def start_inv(self):
+        self.inv      = True
+        self.inv_t    = pygame.time.get_ticks()
+        self.parrying = False
+
+    def try_parry(self):
+        # Cancel existing i-frames and enter parry stance
+        self.inv      = False
+        self.parrying = True
+        self.parry_t  = pygame.time.get_ticks()
+
+    def is_immune(self):
+        return self.inv or self.parrying
 
     def move(self, keys):
         dx = float(keys[pygame.K_d] - keys[pygame.K_a])
@@ -61,25 +89,24 @@ class Player:
             dy *= 0.7071
         self.x = max(PLAYER_R, min(WIDTH  - PLAYER_R, self.x + dx * PLAYER_SPD))
         self.y = max(PLAYER_R, min(HEIGHT - PLAYER_R, self.y + dy * PLAYER_SPD))
-        if self.inv and pygame.time.get_ticks() - self.inv_t >= INV_MS:
-            self.inv = False
-
-    def hit(self):
-        if not self.inv:
-            self.lives -= 1
-            self.inv   = True
-            self.inv_t = pygame.time.get_ticks()
+        t = pygame.time.get_ticks()
+        if self.inv      and t - self.inv_t   >= INV_MS:   self.inv      = False
+        if self.parrying and t - self.parry_t >= PARRY_MS: self.parrying = False
 
     def draw(self, surf):
-        # Flash during invincibility
-        if self.inv and (pygame.time.get_ticks() - self.inv_t) // 140 % 2:
-            return
         p = (int(self.x), int(self.y))
-        pygame.draw.circle(surf, C_PLAYER,  p, PLAYER_R)
-        pygame.draw.circle(surf, C_OUTLINE, p, PLAYER_R, 2)
+        if self.parrying:
+            t     = pygame.time.get_ticks()
+            pulse = int(abs(math.sin(t / 120)) * 5)
+            pygame.draw.circle(surf, C_PARRY, p, PLAYER_R + 8 + pulse, 3)
+            pygame.draw.circle(surf, C_PLAYER, p, PLAYER_R)
+            pygame.draw.circle(surf, C_PARRY,  p, PLAYER_R, 2)
+        elif self.inv and (pygame.time.get_ticks() - self.inv_t) // 70 % 2:
+            return
+        else:
+            pygame.draw.circle(surf, C_PLAYER,  p, PLAYER_R)
+            pygame.draw.circle(surf, C_OUTLINE, p, PLAYER_R, 2)
 
-
-# --- Square obstacle ---
 
 class Square:
     def __init__(self, vmul):
@@ -91,32 +118,97 @@ class Square:
         a  = random.uniform(0, 2 * math.pi)
         self.vx = math.cos(a) * v
         self.vy = math.sin(a) * v
+        self.frozen   = False
+        self.freeze_t = 0
 
     def update(self):
+        if self.frozen:
+            if pygame.time.get_ticks() - self.freeze_t >= FREEZE_MS:
+                self.frozen = False
+            return
         self.x += self.vx
         self.y += self.vy
-        if self.x < 0:                self.x = 0;              self.vx =  abs(self.vx)
-        if self.x + self.s > WIDTH:   self.x = WIDTH  - self.s; self.vx = -abs(self.vx)
-        if self.y < 0:                self.y = 0;              self.vy =  abs(self.vy)
-        if self.y + self.s > HEIGHT:  self.y = HEIGHT - self.s; self.vy = -abs(self.vy)
+        if self.x < 0:               self.x = 0;               self.vx =  abs(self.vx)
+        if self.x + self.s > WIDTH:  self.x = WIDTH  - self.s; self.vx = -abs(self.vx)
+        if self.y < 0:               self.y = 0;               self.vy =  abs(self.vy)
+        if self.y + self.s > HEIGHT: self.y = HEIGHT - self.s; self.vy = -abs(self.vy)
 
-    def draw(self, surf):
-        r = pygame.Rect(int(self.x), int(self.y), self.s, self.s)
-        pygame.draw.rect(surf, C_SQUARE, r)
-        pygame.draw.rect(surf, C_SQ_OUT, r, 2)
+    def freeze(self):
+        self.frozen   = True
+        self.freeze_t = pygame.time.get_ticks()
 
     def hits(self, player):
-        # Circle–rectangle collision
+        if self.frozen:
+            return False
         cx = max(self.x, min(player.x, self.x + self.s))
         cy = max(self.y, min(player.y, self.y + self.s))
         return (player.x - cx) ** 2 + (player.y - cy) ** 2 < PLAYER_R ** 2
 
+    def draw(self, surf):
+        r = pygame.Rect(int(self.x), int(self.y), self.s, self.s)
+        if self.frozen:
+            pygame.draw.rect(surf, C_SQ_FRZ, r)
+            pygame.draw.rect(surf, C_SQ_FRZ_O, r, 2)
+        else:
+            pygame.draw.rect(surf, C_SQUARE, r)
+            pygame.draw.rect(surf, C_SQ_OUT, r, 2)
 
-# --- Helpers ---
 
-def make_level(n):
-    vmul = 1.0 + (n - 1) * 0.18
-    return [Square(vmul) for _ in range(SQUARES_PER[n - 1])]
+class Boss:
+    def __init__(self):
+        self.s      = BOSS_SIZE
+        self.x      = float(WIDTH - self.s - 20)
+        self.base_y = float(HEIGHT // 2 - self.s // 2)
+        self.y      = self.base_y
+        self.hp     = BOSS_MAX_HP
+        self.inv    = False
+        self.inv_t  = 0
+
+    def update(self):
+        t = pygame.time.get_ticks()
+        self.y = self.base_y + math.sin(t / 700) * 18
+        if self.inv and t - self.inv_t >= INV_MS:
+            self.inv = False
+
+    def take_hit(self):
+        if not self.inv:
+            self.hp   -= 1
+            self.inv   = True
+            self.inv_t = pygame.time.get_ticks()
+
+    def hits(self, player):
+        cx = max(self.x, min(player.x, self.x + self.s))
+        cy = max(self.y, min(player.y, self.y + self.s))
+        return (player.x - cx) ** 2 + (player.y - cy) ** 2 < PLAYER_R ** 2
+
+    def draw(self, surf):
+        t  = pygame.time.get_ticks()
+        rx = int(self.x)
+        ry = int(self.y)
+        r  = pygame.Rect(rx, ry, self.s, self.s)
+
+        # Pulsing dark glow behind boss
+        glow_r = int(abs(math.sin(t / 400)) * 8 + 4)
+        glow   = pygame.Rect(rx - glow_r, ry - glow_r,
+                             self.s + glow_r * 2, self.s + glow_r * 2)
+        pygame.draw.rect(surf, (80, 10, 10), glow)
+
+        # Body (flash white when hit)
+        if self.inv and (t - self.inv_t) // 55 % 2:
+            pygame.draw.rect(surf, (255, 210, 210), r)
+        else:
+            pygame.draw.rect(surf, C_BOSS, r)
+        pygame.draw.rect(surf, C_BOSS_OUT, r, 4)
+
+        # HP number centered on boss
+        num = F_BIG.render(str(max(0, self.hp)), True, C_WHITE)
+        surf.blit(num, (rx + self.s // 2 - num.get_width() // 2,
+                        ry + self.s // 2 - num.get_height() // 2))
+
+
+def make_squares(boss_hp):
+    vmul = 1.0 + (BOSS_MAX_HP - boss_hp) * 0.18
+    return [Square(vmul) for _ in range(SQ_COUNT[boss_hp])]
 
 
 def draw_heart(surf, cx, cy, size, color):
@@ -130,40 +222,49 @@ def draw_heart(surf, cx, cy, size, color):
     ])
 
 
-def draw_hud(surf, player, level):
+def draw_hud(surf, player, boss):
     hs, hg = 24, 7
-    hx, hy = 14, 10
-    total = max(3, player.lives)   # always show at least 3 slots
-    for i in range(total):
+    hy = 10
+
+    # Player hearts — top-left
+    for i in range(3):
         col = C_HEART if i < player.lives else C_HEART_E
-        cx  = hx + i * (hs + hg) + hs // 2
-        cy  = hy + hs // 2
-        draw_heart(surf, cx, cy, hs, col)
+        draw_heart(surf, 14 + i * (hs + hg) + hs // 2, hy + hs // 2, hs, col)
 
-    lv = F_SM.render(f"Level {level} / {TOTAL_LEVELS}", True, C_DIM)
-    surf.blit(lv, (WIDTH // 2 - lv.get_width() // 2, 13))
+    # Boss hearts — top-right
+    for i in range(BOSS_MAX_HP):
+        col = C_HEART if i < boss.hp else C_HEART_E
+        bx  = WIDTH - 14 - (BOSS_MAX_HP - i) * (hs + hg) + hs // 2
+        draw_heart(surf, bx, hy + hs // 2, hs, col)
+    boss_lbl = F_TINY.render("BOSS", True, C_DIM)
+    surf.blit(boss_lbl, (WIDTH - 14 - boss_lbl.get_width(), hy + hs + 5))
 
-    tip = F_SM.render("Reach the right side  →", True, C_DIM)
-    surf.blit(tip, (WIDTH // 2 - tip.get_width() // 2, HEIGHT - 27))
+    # Parry bar and label
+    if player.parrying:
+        elapsed = pygame.time.get_ticks() - player.parry_t
+        pct     = max(0.0, 1.0 - elapsed / PARRY_MS)
+        bw, bh  = 130, 10
+        bx      = WIDTH // 2 - bw // 2
+        by      = HEIGHT - 46
+        pygame.draw.rect(surf, (30, 60, 45), (bx, by, bw, bh))
+        pygame.draw.rect(surf, C_PARRY, (bx, by, int(bw * pct), bh))
+        lbl = F_SM.render("PARRY ACTIVE", True, C_PARRY)
+        surf.blit(lbl, (WIDTH // 2 - lbl.get_width() // 2, by - 22))
+
+    tip = F_TINY.render("WASD — move     F — parry", True, C_DIM)
+    surf.blit(tip, (WIDTH // 2 - tip.get_width() // 2, HEIGHT - 20))
 
 
-def draw_goal(surf):
-    for y in range(0, HEIGHT, 18):
-        pygame.draw.line(surf, C_GOAL, (GOAL_X, y), (GOAL_X, min(y + 10, HEIGHT)), 3)
-    lbl = F_SM.render("GOAL", True, C_GOAL)
-    surf.blit(lbl, (GOAL_X - lbl.get_width() // 2, HEIGHT // 2 - lbl.get_height() // 2))
-
-
-def render_scene(surf, player, squares, level):
+def render_scene(surf, player, squares, boss):
     surf.fill(BG)
-    draw_goal(surf)
+    boss.draw(surf)
     for sq in squares:
         sq.draw(surf)
     player.draw(surf)
-    draw_hud(surf, player, level)
+    draw_hud(surf, player, boss)
 
 
-def overlay(surf, title, sub, tc=C_WHITE):
+def overlay(surf, title, sub="", tc=C_WHITE):
     ov = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
     ov.fill((0, 0, 0, 175))
     surf.blit(ov, (0, 0))
@@ -186,65 +287,80 @@ def wait_for_key():
         clock.tick(FPS)
 
 
-# --- Main loop ---
-
 def main():
-    # Title screen
-    screen.fill(BG)
-    overlay(screen, "SURVIVAL", "Press any key to begin", C_YELLOW)
-    wait_for_key()
+    while True:  # outer restart loop
+        screen.fill(BG)
+        overlay(screen, "BOSS FIGHT", "Press any key to begin", C_YELLOW)
+        wait_for_key()
 
-    player  = Player()
-    level   = 1
-    squares = make_level(level)
+        player  = Player()
+        boss    = Boss()
+        squares = make_squares(boss.hp)
 
-    while True:
-        # Events
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
-                pygame.quit()
-                sys.exit()
+        while True:
+            now = pygame.time.get_ticks()
 
-        # Update
-        player.move(pygame.key.get_pressed())
-        for sq in squares:
-            sq.update()
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        sys.exit()
+                    if e.key == pygame.K_f and not player.parrying:
+                        player.try_parry()
 
-        # Collision — only register one hit per frame
-        for sq in squares:
-            if sq.hits(player):
-                player.hit()
+            player.move(pygame.key.get_pressed())
+            boss.update()
+            for sq in squares:
+                sq.update()
+
+            # --- Boss collision ---
+            if boss.hits(player):
+                if player.parrying:
+                    # Failed parry: lose 1 HP, teleport, 0.5s i-frames, boss unharmed
+                    player.lives   -= 1
+                    player.parrying = False
+                    player.teleport_start()
+                    player.start_inv()
+                elif not player.is_immune():
+                    # Normal touch: gain HP (max 3), boss loses HP, teleport, more squares
+                    player.lives = min(3, player.lives + 1)
+                    boss.take_hit()
+                    player.teleport_start()
+                    player.start_inv()
+                    if boss.hp > 0:
+                        squares = make_squares(boss.hp)
+
+            # --- Win ---
+            if boss.hp <= 0:
+                render_scene(screen, player, squares, boss)
+                overlay(screen, "BOSS DEFEATED!", "Press any key to play again", C_GREEN)
+                wait_for_key()
                 break
 
-        # Win level: player reached the right side
-        if player.x + PLAYER_R >= GOAL_X:
-            render_scene(screen, player, squares, level)
-            if level == TOTAL_LEVELS:
-                overlay(screen, "YOU WIN!", "Congratulations!", C_GOAL)
+            # --- Square collision (first hit only per frame) ---
+            for sq in squares:
+                if sq.hits(player):
+                    if player.parrying:
+                        sq.freeze()
+                        player.parrying = False
+                    elif not player.is_immune():
+                        player.lives -= 1
+                        player.start_inv()
+                    break
+
+            # --- Lose ---
+            if player.lives <= 0:
+                render_scene(screen, player, squares, boss)
+                overlay(screen, "GAME OVER", "Press any key to play again", C_SQUARE)
                 wait_for_key()
-                return
-            overlay(screen, f"Level {level} Clear!", "Press any key  ·  +1 life", C_GOAL)
-            wait_for_key()
-            level += 1
-            player.lives = min(8, player.lives + 1)
-            player.reset()
-            squares = make_level(level)
-            continue
+                break
 
-        # Lose: no lives left
-        if player.lives <= 0:
-            render_scene(screen, player, squares, level)
-            overlay(screen, "GAME OVER", "Press any key to exit", C_SQUARE)
-            wait_for_key()
-            return
-
-        # Draw
-        render_scene(screen, player, squares, level)
-        pygame.display.flip()
-        clock.tick(FPS)
+            render_scene(screen, player, squares, boss)
+            pygame.display.flip()
+            clock.tick(FPS)
 
 
 main()
