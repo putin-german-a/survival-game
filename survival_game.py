@@ -74,11 +74,14 @@ class Player:
         self.inv_t    = pygame.time.get_ticks()
         self.parrying = False
 
-    def try_parry(self):
+    def parry_ready(self):
+        return pygame.time.get_ticks() - self.parry_cd_t >= PARRY_CD_MS
 
-        self.inv      = False
-        self.parrying = True
-        self.parry_t  = pygame.time.get_ticks()
+    def try_parry(self):
+        self.inv        = False
+        self.parrying   = True
+        self.parry_t    = pygame.time.get_ticks()
+        self.parry_cd_t = self.parry_t
 
     def is_immune(self):
         return self.inv or self.parrying
