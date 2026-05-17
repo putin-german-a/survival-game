@@ -27,10 +27,10 @@ C_GREEN     = (60, 220, 100)
 
 # Bullet colors per charge tier (0–3)
 SHOT_COLORS = [
-    (120, 120, 195),  # 0: dim blue-gray (stun)
-    (255, 240, 60),   # 1: yellow
-    (255, 145, 25),   # 2: orange
-    (255, 55, 55),    # 3: red
+    (255, 255, 255),  # 0: white
+    (180, 230, 255),  # 1: light blue
+    (80,  170, 255),  # 2: blue
+    (30,  80,  255),  # 3: dark blue
 ]
 
 PLAYER_R      = 16
