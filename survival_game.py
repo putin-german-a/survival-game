@@ -282,15 +282,15 @@ class Bullet:
         elif charges == 2:
             self.r        = PLAYER_R
             speed         = PLAYER_SPD * 2
-            self.max_hits = 3   # pierces up to 2 more after first hit
+            self.max_hits = 3
             self.stun     = False
-            self.boss_dmg = 2
+            self.boss_dmg = 1
         else:  # 3 charges
             self.r        = PLAYER_R * 2
             speed         = PLAYER_SPD * 4
-            self.max_hits = 9999  # all enemies
+            self.max_hits = 4
             self.stun     = False
-            self.boss_dmg = 3
+            self.boss_dmg = 2
 
         self.x       = float(x)
         self.y       = float(y)
