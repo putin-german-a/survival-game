@@ -47,7 +47,6 @@ BOSS_SIZE     = 90
 BOSS_MAX_HP   = 10
 
 MAX_CHARGES      = 3
-CHARGE_REGEN_MS  = 15000  # passive: 1 charge per 15s
 
 # Squares per stage (stage 0–4, every 2 boss HP)
 SQ_COUNTS = [11, 14, 18, 22, 27]
