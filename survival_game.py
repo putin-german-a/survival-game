@@ -59,10 +59,11 @@ class Player:
         self.lives    = 3
         self.x        = self.SPAWN_X
         self.y        = self.SPAWN_Y
-        self.inv      = False
-        self.inv_t    = 0
-        self.parrying = False
-        self.parry_t  = 0
+        self.inv        = False
+        self.inv_t      = 0
+        self.parrying   = False
+        self.parry_t    = 0
+        self.parry_cd_t = -PARRY_CD_MS  # ready from the start
 
     def teleport_start(self):
         self.x = self.SPAWN_X
