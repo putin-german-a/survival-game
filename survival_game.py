@@ -105,13 +105,6 @@ class Player:
     def gain_charge(self):
         self.charges = min(MAX_CHARGES, self.charges + 1)
 
-    def update_charge_regen(self):
-        if self.charges >= MAX_CHARGES:
-            self.charge_regen_t = pygame.time.get_ticks()
-        elif pygame.time.get_ticks() - self.charge_regen_t >= CHARGE_REGEN_MS:
-            self.charges += 1
-            self.charge_regen_t = pygame.time.get_ticks()
-
     def shoot(self, tx, ty):
         c = self.charges
         self.charges = 0
