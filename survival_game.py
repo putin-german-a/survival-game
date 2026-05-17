@@ -311,7 +311,7 @@ def main():
                     if e.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit()
-                    if e.key == pygame.K_f and not player.parrying:
+                    if e.key == pygame.K_f and not player.parrying and player.parry_ready():
                         player.try_parry()
 
             player.move(pygame.key.get_pressed())
