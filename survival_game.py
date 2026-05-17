@@ -482,6 +482,8 @@ def main():
                         cur_stage = new_stage
                         squares = make_squares(boss.hp)
                     # Teleport player + 2s i-frames on charged hit
+                    if b.charges == 3:
+                        player.lives = min(3, player.lives + 1)
                     player.teleport_start()
                     player.start_inv(2000)
                     b.active = False
