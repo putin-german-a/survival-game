@@ -35,7 +35,7 @@ SHOT_COLORS = [
 
 PLAYER_R      = 16
 PLAYER_SPD    = 4.5
-SQ_SIZE       = 32
+SQ_SIZE       = 42
 SQ_BASE_V     = 2.3
 INV_MS        = 500
 PARRY_MS      = 1000
