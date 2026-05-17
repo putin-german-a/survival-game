@@ -5,7 +5,7 @@ import sys
 
 pygame.init()
 
-WIDTH, HEIGHT = 900, 600
+WIDTH, HEIGHT = 1060, 600
 FPS           = 60
 
 BG          = (20, 22, 35)
