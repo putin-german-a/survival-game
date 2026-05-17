@@ -9,7 +9,7 @@ WIDTH, HEIGHT = 900, 600
 FPS           = 60
 
 BG          = (20, 22, 35)
-C_PLAYER    = (80, 160, 255)
+C_PLAYER    = (255, 255, 255)
 C_OUTLINE   = (200, 230, 255)
 C_SQUARE    = (220, 60, 60)
 C_SQ_OUT    = (255, 130, 130)
@@ -29,14 +29,15 @@ PLAYER_R   = 16
 PLAYER_SPD = 4.5
 SQ_SIZE    = 32
 SQ_BASE_V  = 2.3
-INV_MS     = 500   # 0.5s i-frames
-PARRY_MS   = 1000  # 1s parry window
-FREEZE_MS  = 5000  # 5s square freeze after parry
+INV_MS     = 500
+PARRY_MS   = 1000
+PARRY_CD_MS = 7000
+FREEZE_MS  = 5000
 
 BOSS_SIZE   = 90
 BOSS_MAX_HP = 5
 
-# Squares count per boss HP stage (mirrors original 5-level progression)
+
 SQ_COUNT = {5: 8, 4: 11, 3: 15, 2: 19, 1: 24}
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -73,7 +74,7 @@ class Player:
         self.parrying = False
 
     def try_parry(self):
-        # Cancel existing i-frames and enter parry stance
+
         self.inv      = False
         self.parrying = True
         self.parry_t  = pygame.time.get_ticks()
@@ -187,20 +188,20 @@ class Boss:
         ry = int(self.y)
         r  = pygame.Rect(rx, ry, self.s, self.s)
 
-        # Pulsing dark glow behind boss
+
         glow_r = int(abs(math.sin(t / 400)) * 8 + 4)
         glow   = pygame.Rect(rx - glow_r, ry - glow_r,
                              self.s + glow_r * 2, self.s + glow_r * 2)
         pygame.draw.rect(surf, (80, 10, 10), glow)
 
-        # Body (flash white when hit)
+
         if self.inv and (t - self.inv_t) // 55 % 2:
             pygame.draw.rect(surf, (255, 210, 210), r)
         else:
             pygame.draw.rect(surf, C_BOSS, r)
         pygame.draw.rect(surf, C_BOSS_OUT, r, 4)
 
-        # HP number centered on boss
+
         num = F_BIG.render(str(max(0, self.hp)), True, C_WHITE)
         surf.blit(num, (rx + self.s // 2 - num.get_width() // 2,
                         ry + self.s // 2 - num.get_height() // 2))
@@ -226,12 +227,12 @@ def draw_hud(surf, player, boss):
     hs, hg = 24, 7
     hy = 10
 
-    # Player hearts — top-left
+
     for i in range(3):
         col = C_HEART if i < player.lives else C_HEART_E
         draw_heart(surf, 14 + i * (hs + hg) + hs // 2, hy + hs // 2, hs, col)
 
-    # Boss hearts — top-right
+
     for i in range(BOSS_MAX_HP):
         col = C_HEART if i < boss.hp else C_HEART_E
         bx  = WIDTH - 14 - (BOSS_MAX_HP - i) * (hs + hg) + hs // 2
@@ -239,7 +240,7 @@ def draw_hud(surf, player, boss):
     boss_lbl = F_TINY.render("BOSS", True, C_DIM)
     surf.blit(boss_lbl, (WIDTH - 14 - boss_lbl.get_width(), hy + hs + 5))
 
-    # Parry bar and label
+
     if player.parrying:
         elapsed = pygame.time.get_ticks() - player.parry_t
         pct     = max(0.0, 1.0 - elapsed / PARRY_MS)
