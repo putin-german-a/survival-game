@@ -343,16 +343,6 @@ def draw_hud(surf, player, boss):
         pygame.draw.circle(surf, col, (ox, orb_y), orb_r)
         pygame.draw.circle(surf, C_DIM, (ox, orb_y), orb_r, 1)
 
-    # Passive regen bar (small, below orbs)
-    if player.charges < MAX_CHARGES:
-        elapsed = pygame.time.get_ticks() - player.charge_regen_t
-        pct     = min(1.0, elapsed / CHARGE_REGEN_MS)
-        rw = orb_r * 2 * MAX_CHARGES + 5 * (MAX_CHARGES - 1)
-        rx = 14
-        ry = orb_y + orb_r + 5
-        pygame.draw.rect(surf, (35, 38, 55), (rx, ry, rw, 4))
-        pygame.draw.rect(surf, C_YELLOW,     (rx, ry, int(rw * pct), 4))
-
     # --- Boss hearts (top-right, smaller to fit 10) ---
     bhs, bhg = 18, 4
     for i in range(BOSS_MAX_HP):
