@@ -298,8 +298,6 @@ def main():
         squares = make_squares(boss.hp)
 
         while True:
-            now = pygame.time.get_ticks()
-
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     pygame.quit()
