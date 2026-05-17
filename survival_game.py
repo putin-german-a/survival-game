@@ -245,18 +245,29 @@ def draw_hud(surf, player, boss):
     surf.blit(boss_lbl, (WIDTH - 14 - boss_lbl.get_width(), hy + hs + 5))
 
 
+    bw, bh = 130, 10
+    bx     = WIDTH // 2 - bw // 2
+    by     = HEIGHT - 46
     if player.parrying:
         elapsed = pygame.time.get_ticks() - player.parry_t
         pct     = max(0.0, 1.0 - elapsed / PARRY_MS)
-        bw, bh  = 130, 10
-        bx      = WIDTH // 2 - bw // 2
-        by      = HEIGHT - 46
         pygame.draw.rect(surf, (30, 60, 45), (bx, by, bw, bh))
         pygame.draw.rect(surf, C_PARRY, (bx, by, int(bw * pct), bh))
         lbl = F_SM.render("PARRY ACTIVE", True, C_PARRY)
         surf.blit(lbl, (WIDTH // 2 - lbl.get_width() // 2, by - 22))
+    else:
+        cd_elapsed = pygame.time.get_ticks() - player.parry_cd_t
+        cd_pct     = min(1.0, cd_elapsed / PARRY_CD_MS)
+        ready      = cd_pct >= 1.0
+        bar_color  = C_PARRY if ready else (80, 130, 110)
+        pygame.draw.rect(surf, (30, 40, 35), (bx, by, bw, bh))
+        pygame.draw.rect(surf, bar_color, (bx, by, int(bw * cd_pct), bh))
+        lbl_text = "F — PARRY" if ready else f"F — PARRY  {max(0, PARRY_CD_MS - cd_elapsed) // 1000 + 1}s"
+        lbl_col  = C_PARRY if ready else C_DIM
+        lbl = F_TINY.render(lbl_text, True, lbl_col)
+        surf.blit(lbl, (WIDTH // 2 - lbl.get_width() // 2, by - 18))
 
-    tip = F_TINY.render("WASD — move     F — parry", True, C_DIM)
+    tip = F_TINY.render("WASD — move", True, C_DIM)
     surf.blit(tip, (WIDTH // 2 - tip.get_width() // 2, HEIGHT - 20))
 
 
