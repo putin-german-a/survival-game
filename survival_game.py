@@ -467,6 +467,9 @@ def main():
                     if new_stage != cur_stage and boss.hp > 0:
                         cur_stage = new_stage
                         squares = make_squares(boss.hp)
+                    # Teleport player + 2s i-frames on charged hit
+                    player.teleport_start()
+                    player.start_inv(2000)
                     b.active = False
                     dead_bullets.append(b)
                     continue
