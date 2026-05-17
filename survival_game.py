@@ -473,7 +473,7 @@ def main():
                     continue
 
                 # Boss hit (always stops the bullet)
-                if b.boss_dmg > 0 and b.hits_bullet(boss):
+                if b.boss_dmg > 0 and boss.hits_bullet(b):
                     boss.bullet_hit(b.boss_dmg)
                     new_stage = get_stage(boss.hp)
                     if new_stage != cur_stage and boss.hp > 0:
@@ -485,7 +485,7 @@ def main():
 
                 # Square hits (with pierce)
                 for sq in squares:
-                    if sq not in dead_squares and b.hits_bullet(sq):
+                    if sq not in dead_squares and sq.hits_bullet(b):
                         if b.stun:
                             sq.freeze(STUN_MS)
                         else:
