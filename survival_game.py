@@ -107,9 +107,13 @@ class Player:
     def gain_charge(self):
         self.charges = min(MAX_CHARGES, self.charges + 1)
 
+    def shoot_ready(self):
+        return pygame.time.get_ticks() - self.shoot_cd_t >= SHOOT_CD_MS
+
     def shoot(self, tx, ty):
         c = self.charges
-        self.charges = 0
+        self.charges    = 0
+        self.shoot_cd_t = pygame.time.get_ticks()
         return Bullet(self.x, self.y, tx, ty, c)
 
     def is_immune(self):
