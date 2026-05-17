@@ -124,7 +124,7 @@ class Player:
         self.x = max(PLAYER_R, min(WIDTH  - PLAYER_R, self.x + dx * PLAYER_SPD))
         self.y = max(PLAYER_R, min(HEIGHT - PLAYER_R, self.y + dy * PLAYER_SPD))
         t = pygame.time.get_ticks()
-        if self.inv      and t - self.inv_t   >= INV_MS:   self.inv      = False
+        if self.inv      and t - self.inv_t   >= self.inv_dur: self.inv      = False
         if self.parrying and t - self.parry_t >= PARRY_MS: self.parrying = False
 
     def draw(self, surf):
