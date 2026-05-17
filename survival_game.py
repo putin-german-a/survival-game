@@ -89,9 +89,10 @@ class Player:
         self.x = self.SPAWN_X
         self.y = self.SPAWN_Y
 
-    def start_inv(self):
+    def start_inv(self, duration_ms=INV_MS):
         self.inv      = True
         self.inv_t    = pygame.time.get_ticks()
+        self.inv_dur  = duration_ms
         self.parrying = False
 
     def parry_ready(self):
