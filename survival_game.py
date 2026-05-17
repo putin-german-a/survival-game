@@ -441,7 +441,6 @@ def main():
                     bullets.append(player.shoot(mx, my))
 
             player.move(pygame.key.get_pressed())
-            player.update_charge_regen()
             boss.update()
             for sq in squares:
                 sq.update()
