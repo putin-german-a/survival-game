@@ -38,7 +38,7 @@ BOSS_SIZE   = 90
 BOSS_MAX_HP = 5
 
 
-SQ_COUNT = {5: 8, 4: 11, 3: 15, 2: 19, 1: 24}
+SQ_COUNT = {5: 11, 4: 14, 3: 18, 2: 22, 1: 27}
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Survival — Boss Fight")
