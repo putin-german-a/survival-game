@@ -39,7 +39,7 @@ SQ_SIZE       = 32
 SQ_BASE_V     = 2.3
 INV_MS        = 500
 PARRY_MS      = 1000
-PARRY_CD_MS   = 7000
+PARRY_CD_MS   = 3000
 FREEZE_MS     = 5000   # parry freeze (squares)
 STUN_MS       = 7000   # 0-charge bullet stun
 
