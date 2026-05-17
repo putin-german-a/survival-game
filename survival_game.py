@@ -80,8 +80,7 @@ class Player:
         self.parrying      = False
         self.parry_t       = 0
         self.parry_cd_t    = -PARRY_CD_MS
-        self.charges       = 0
-        self.charge_regen_t = pygame.time.get_ticks()
+        self.charges = 0
 
     def teleport_start(self):
         self.x = self.SPAWN_X
