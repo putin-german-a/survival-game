@@ -442,7 +442,7 @@ def main():
                         sys.exit()
                     if e.key == pygame.K_f and not player.parrying and player.parry_ready():
                         player.try_parry()
-                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and player.shoot_ready():
                     mx, my = pygame.mouse.get_pos()
                     bullets.append(player.shoot(mx, my))
 
