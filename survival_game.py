@@ -349,6 +349,20 @@ def draw_hud(surf, player, boss):
         pygame.draw.circle(surf, col, (ox, orb_y), orb_r)
         pygame.draw.circle(surf, C_DIM, (ox, orb_y), orb_r, 1)
 
+    # --- Shoot cooldown bar (below charge orbs) ---
+    sh_elapsed = pygame.time.get_ticks() - player.shoot_cd_t
+    sh_pct     = min(1.0, sh_elapsed / SHOOT_CD_MS)
+    sh_ready   = sh_pct >= 1.0
+    rw = orb_r * 2 * MAX_CHARGES + 5 * (MAX_CHARGES - 1)
+    rx = 14
+    ry = orb_y + orb_r + 5
+    pygame.draw.rect(surf, (35, 38, 55), (rx, ry, rw, 4))
+    pygame.draw.rect(surf, C_YELLOW if sh_ready else (130, 110, 40), (rx, ry, int(rw * sh_pct), 4))
+    if not sh_ready:
+        secs = max(0, SHOOT_CD_MS - sh_elapsed) // 1000 + 1
+        cd_lbl = F_TINY.render(f"LMB {secs}s", True, C_DIM)
+        surf.blit(cd_lbl, (rx, ry + 6))
+
     # --- Boss hearts (top-right, smaller to fit 10) ---
     bhs, bhg = 18, 4
     for i in range(BOSS_MAX_HP):
