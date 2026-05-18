@@ -538,7 +538,7 @@ def main():
                     if player.parrying:
                         sq.freeze(FREEZE_MS)
                         player.gain_charge()
-                        player.start_inv(2000)
+                        player.start_inv(1000)
                     elif not player.is_immune():
                         player.lives -= 1
                         player.start_inv()
