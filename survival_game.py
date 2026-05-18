@@ -509,13 +509,13 @@ def main():
             # --- Boss collision (player touch) ---
             if boss.hits_player(player):
                 if player.parrying:
-                    # Failed parry: lose 1 HP, teleport, 0.5s i-frames
+                    # Failed parry: lose 1 HP, teleport, 2s i-frames
                     player.lives   -= 1
                     player.parrying = False
                     player.teleport_start()
-                    player.start_inv()
+                    player.start_inv(2000)
                 elif not player.is_immune():
-                    # Normal touch: gain HP, boss loses 1 HP, teleport
+                    # Normal touch: gain HP, boss loses 1 HP, teleport, 2s i-frames
                     player.lives = min(3, player.lives + 1)
                     boss.take_hit(1)
                     new_stage = get_stage(boss.hp)
@@ -523,7 +523,7 @@ def main():
                         cur_stage = new_stage
                         squares = make_squares(boss.hp)
                     player.teleport_start()
-                    player.start_inv()
+                    player.start_inv(2000)
 
             # --- Win ---
             if boss.hp <= 0:
