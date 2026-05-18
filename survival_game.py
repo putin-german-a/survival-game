@@ -25,12 +25,12 @@ C_YELLOW    = (255, 215, 50)
 C_PARRY     = (80, 255, 180)
 C_GREEN     = (60, 220, 100)
 
-# Bullet colors per charge tier (0–3)
+
 SHOT_COLORS = [
-    (255, 255, 255),  # 0: white
-    (180, 230, 255),  # 1: light blue
-    (80,  170, 255),  # 2: blue
-    (30,  80,  255),  # 3: dark blue
+    (255, 255, 255), 
+    (180, 230, 255),  
+    (80,  170, 255), 
+    (30,  80,  255), 
 ]
 
 PLAYER_R      = 16
@@ -40,8 +40,8 @@ SQ_BASE_V     = 2.3
 INV_MS        = 500
 PARRY_MS      = 1000
 PARRY_CD_MS   = 3000
-SHOOT_CD_MS   = 10000  # shoot cooldown
-FREEZE_MS     = 5000   # parry freeze (squares)
+SHOOT_CD_MS   = 1  # shoot cooldown
+FREEZE_MS     = 5000   # paвввrry freeze (squares)
 STUN_MS       = 7000   # 0-charge bullet stun
 
 BOSS_SIZE     = 90
@@ -537,8 +537,8 @@ def main():
                 if sq.hits_player(player):
                     if player.parrying:
                         sq.freeze(FREEZE_MS)
-                        player.parrying = False
-                        player.gain_charge()   # +1 charge on successful parry
+                        player.gain_charge()
+                        player.start_inv(2000)
                     elif not player.is_immune():
                         player.lives -= 1
                         player.start_inv()
