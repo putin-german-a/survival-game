@@ -40,16 +40,16 @@ SQ_BASE_V     = 2.3
 INV_MS        = 500
 PARRY_MS      = 1000
 PARRY_CD_MS   = 4000
-SHOOT_CD_MS   = 1  # shoot cooldown
-FREEZE_MS     = 5000   # paвввrry freeze (squares)
-STUN_MS       = 7000   # 0-charge bullet stun
+SHOOT_CD_MS   = 15000  
+FREEZE_MS     = 5000  
+STUN_MS       = 7000  
 
 BOSS_SIZE     = 90
 BOSS_MAX_HP   = 10
 
 MAX_CHARGES      = 3
 
-# Squares per stage (stage 0–4, every 2 boss HP)
+
 SQ_COUNTS = [11, 14, 18, 22, 27]
 
 
@@ -334,12 +334,10 @@ def draw_hud(surf, player, boss):
     hs, hg = 24, 7
     hy = 10
 
-    # --- Player hearts (top-left) ---
     for i in range(3):
         col = C_HEART if i < player.lives else C_HEART_E
         draw_heart(surf, 14 + i * (hs + hg) + hs // 2, hy + hs // 2, hs, col)
 
-    # --- Charge orbs (below player hearts) ---
     orb_r = 9
     orb_y = hy + hs + 16
     shot_col = SHOT_COLORS[player.charges] if player.charges > 0 else SHOT_COLORS[0]
@@ -349,7 +347,6 @@ def draw_hud(surf, player, boss):
         pygame.draw.circle(surf, col, (ox, orb_y), orb_r)
         pygame.draw.circle(surf, C_DIM, (ox, orb_y), orb_r, 1)
 
-    # --- Shoot cooldown bar (below charge orbs) ---
     sh_elapsed = pygame.time.get_ticks() - player.shoot_cd_t
     sh_pct     = min(1.0, sh_elapsed / SHOOT_CD_MS)
     sh_ready   = sh_pct >= 1.0
@@ -460,6 +457,7 @@ def main():
                     mx, my = pygame.mouse.get_pos()
                     bullets.append(player.shoot(mx, my))
 
+
             player.move(pygame.key.get_pressed())
             boss.update()
             for sq in squares:
@@ -552,6 +550,7 @@ def main():
                 break
 
             render_scene(screen, player, squares, boss, bullets)
+            
             pygame.display.flip()
             clock.tick(FPS)
 
