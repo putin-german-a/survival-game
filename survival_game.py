@@ -26,28 +26,23 @@ C_PARRY     = (80, 255, 180)
 C_GREEN     = (60, 220, 100)
 
 
-SHOT_COLORS = [
-    (255, 255, 255), 
-    (180, 230, 255),  
-    (80,  170, 255), 
-    (30,  80,  255), 
-]
+SHOT_COLORS = [(255, 255, 255), (180, 230, 255),  (80,  170, 255), (30,  80,  255), ]
 
-PLAYER_R      = 16
-PLAYER_SPD    = 4.5
-SQ_SIZE       = 39
-SQ_BASE_V     = 2.3
-INV_MS        = 500
-PARRY_MS      = 1000
-PARRY_CD_MS   = 4000
-SHOOT_CD_MS   = 15000  
-FREEZE_MS     = 5000  
-STUN_MS       = 7000  
+PLAYER_R = 16
+PLAYER_SPD = 4.5
+SQ_SIZE = 39
+SQ_BASE_V = 2.3
+INV_MS = 500
+PARRY_MS = 1000
+PARRY_CD_MS  = 4000
+SHOOT_CD_MS  = 15000  
+FREEZE_MS = 5000  
+STUN_MS = 7000  
 
-BOSS_SIZE     = 90
-BOSS_MAX_HP   = 10
+BOSS_SIZE = 90
+BOSS_MAX_HP = 10
 
-MAX_CHARGES      = 3
+MAX_CHARGES = 3
 
 
 SQ_COUNTS = [11, 14, 18, 22, 27]
@@ -58,7 +53,7 @@ def get_stage(boss_hp):
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Survival — Boss Fight")
+pygame.display.set_caption("Testing...")
 clock = pygame.time.Clock()
 
 F_TITLE = pygame.font.SysFont(None, 84)
@@ -69,21 +64,21 @@ F_TINY  = pygame.font.SysFont(None, 22)
 
 
 class Player:
-    SPAWN_X = float(PLAYER_R + 44)
-    SPAWN_Y = float(HEIGHT / 2)
+    SPAWN_X = PLAYER_R + 44
+    SPAWN_Y = HEIGHT / 2
 
     def __init__(self):
-        self.lives         = 3
-        self.x             = self.SPAWN_X
-        self.y             = self.SPAWN_Y
-        self.inv           = False
-        self.inv_t         = 0
-        self.inv_dur       = INV_MS
-        self.parrying      = False
-        self.parry_t       = 0
-        self.parry_cd_t    = -PARRY_CD_MS
-        self.charges       = 0
-        self.shoot_cd_t    = -SHOOT_CD_MS
+        self.lives = 3
+        self.x = self.SPAWN_X
+        self.y = self.SPAWN_Y
+        self.inv = False
+        self.inv_t = 0
+        self.inv_dur = INV_MS
+        self.parrying = False
+        self.parry_t  = 0
+        self.parry_cd_t = -PARRY_CD_MS
+        self.charges = 0
+        self.shoot_cd_t = -SHOOT_CD_MS
 
     def teleport_start(self):
         self.x = self.SPAWN_X
