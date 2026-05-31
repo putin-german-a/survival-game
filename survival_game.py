@@ -250,9 +250,6 @@ class Boss:
             pygame.draw.rect(surf, C_BOSS, r)
         pygame.draw.rect(surf, C_BOSS_OUT, r, 4)
 
-        num = F_BIG.render(str(max(0, self.hp)), True, C_WHITE)
-        surf.blit(num, (rx + self.s // 2 - num.get_width() // 2,
-                        ry + self.s // 2 - num.get_height() // 2))
 
 
 class Bullet:
