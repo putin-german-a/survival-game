@@ -30,19 +30,6 @@ C_DAGGER       = (160, 160, 170)
 
 SHOT_COLORS = [(255, 255, 255), (180, 230, 255), (80, 170, 255), (30, 80, 255)]
 
-SKINS = [
-    {'id': 'red',     'name': 'RED BALL',  'shape': 'circle',
-     'color': (210, 45, 45),   'outline': (255, 110, 110)},
-    {'id': 'sq',      'name': 'WHITE SQ',  'shape': 'square',
-     'color': (240, 240, 240), 'outline': (180, 180, 180)},
-    {'id': 'inv',     'name': 'INVERSION', 'shape': 'circle',
-     'color': (12, 14, 26),    'outline': (255, 255, 255)},
-    {'id': 'blue',    'name': 'BLUE BALL', 'shape': 'circle',
-     'color': (30, 110, 255),  'outline': (100, 190, 255)},
-    {'id': 'default', 'name': 'DEFAULT',   'shape': 'circle',
-     'color': C_PLAYER,        'outline': C_OUTLINE},
-]
-
 PLAYER_R     = 16
 PLAYER_SPD   = 4.5
 SQ_SIZE      = 39
