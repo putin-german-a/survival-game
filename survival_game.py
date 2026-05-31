@@ -30,6 +30,19 @@ C_DAGGER       = (160, 160, 170)
 
 SHOT_COLORS = [(255, 255, 255), (180, 230, 255), (80, 170, 255), (30, 80, 255)]
 
+SKINS = [
+    {'id': 'red',     'name': 'RED BALL',  'shape': 'circle',
+     'color': (210, 45, 45),   'outline': (255, 110, 110)},
+    {'id': 'sq',      'name': 'WHITE SQ',  'shape': 'square',
+     'color': (240, 240, 240), 'outline': (180, 180, 180)},
+    {'id': 'inv',     'name': 'INVERSION', 'shape': 'circle',
+     'color': (12, 14, 26),    'outline': (255, 255, 255)},
+    {'id': 'blue',    'name': 'BLUE BALL', 'shape': 'circle',
+     'color': (30, 110, 255),  'outline': (100, 190, 255)},
+    {'id': 'default', 'name': 'DEFAULT',   'shape': 'circle',
+     'color': C_PLAYER,        'outline': C_OUTLINE},
+]
+
 PLAYER_R     = 16
 PLAYER_SPD   = 4.5
 SQ_SIZE      = 39
@@ -51,6 +64,8 @@ DAGGER_CD_MS    = 1
 DAGGER_RANGE    = PLAYER_R * 14
 DAGGER_SPEED    = PLAYER_SPD * 4
 
+SKIN_R = 28   # preview radius in skin select screen
+
 SQ_COUNTS = [11, 14, 18, 22, 27]
 
 
@@ -69,12 +84,25 @@ F_SM    = pygame.font.SysFont(None, 28)
 F_TINY  = pygame.font.SysFont(None, 22)
 
 
+def draw_skin_shape(surf, skin, cx, cy, size, color=None, outline=None):
+    c = color   if color   is not None else skin['color']
+    o = outline if outline is not None else skin['outline']
+    if skin['shape'] == 'square':
+        r = pygame.Rect(cx - size, cy - size, size * 2, size * 2)
+        pygame.draw.rect(surf, c, r)
+        pygame.draw.rect(surf, o, r, 2)
+    else:
+        pygame.draw.circle(surf, c, (cx, cy), size)
+        pygame.draw.circle(surf, o, (cx, cy), size, 2)
+
+
 class Player:
     SPAWN_X = PLAYER_R + 44
     SPAWN_Y = HEIGHT / 2
 
-    def __init__(self, player_class='mage'):
+    def __init__(self, player_class='mage', skin_idx=4):
         self.player_class = player_class
+        self.skin         = SKINS[skin_idx]
         self.lives = 3
         self.x = self.SPAWN_X
         self.y = self.SPAWN_Y
@@ -148,20 +176,21 @@ class Player:
         if self.parrying and t - self.parry_t >= PARRY_MS:     self.parrying = False
 
     def draw(self, surf):
-        p  = (int(self.x), int(self.y))
-        pc = C_ASSASSIN     if self.player_class == 'assassin' else C_PLAYER
-        oc = C_ASSASSIN_OUT if self.player_class == 'assassin' else C_OUTLINE
+        p    = (int(self.x), int(self.y))
+        skin = self.skin
+        pc   = skin['color']
+        oc   = skin['outline']
+        if self.player_class == 'assassin' and skin['id'] == 'default':
+            pc, oc = C_ASSASSIN, C_ASSASSIN_OUT
         if self.parrying:
             t     = pygame.time.get_ticks()
             pulse = int(abs(math.sin(t / 120)) * 5)
             pygame.draw.circle(surf, C_PARRY, p, PLAYER_R + 8 + pulse, 3)
-            pygame.draw.circle(surf, pc, p, PLAYER_R)
-            pygame.draw.circle(surf, C_PARRY, p, PLAYER_R, 2)
+            draw_skin_shape(surf, skin, p[0], p[1], PLAYER_R, pc, C_PARRY)
         elif self.inv and (pygame.time.get_ticks() - self.inv_t) // 70 % 2:
             return
         else:
-            pygame.draw.circle(surf, pc, p, PLAYER_R)
-            pygame.draw.circle(surf, oc, p, PLAYER_R, 2)
+            draw_skin_shape(surf, skin, p[0], p[1], PLAYER_R, pc, oc)
 
 
 class Square:
@@ -332,17 +361,17 @@ class Dagger:
         dx = tx - x
         dy = ty - y
         length = math.sqrt(dx * dx + dy * dy) or 1
-        self.vx      = dx / length * DAGGER_SPEED
-        self.vy      = dy / length * DAGGER_SPEED
-        self.x       = float(x)
-        self.y       = float(y)
-        self.r       = PLAYER_R // 2
-        self.active  = True
+        self.vx       = dx / length * DAGGER_SPEED
+        self.vy       = dy / length * DAGGER_SPEED
+        self.x        = float(x)
+        self.y        = float(y)
+        self.r        = PLAYER_R // 2
+        self.active   = True
         self.boss_dmg = 1
-        self.stun    = False
+        self.stun     = False
         self.max_hits = 1
-        self.sq_hits = 0
-        self.charges = 0
+        self.sq_hits  = 0
+        self.charges  = 0
 
     def update(self):
         self.x += self.vx
@@ -502,14 +531,84 @@ def wait_for_key():
         clock.tick(FPS)
 
 
-def class_select_screen():
+def skin_select_screen():
+    n       = len(SKINS)
+    margin  = 110
+    spacing = (WIDTH - 2 * margin) // (n - 1)
+    skin_xs = [margin + i * spacing for i in range(n)]
+    skin_y  = 190
+    hit_r   = SKIN_R + PLAYER_R + 2
+
+    px, py   = float(WIDTH // 2), float(HEIGHT - 80)
+    selected = 4  # DEFAULT pre-selected
+
+    while True:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    pygame.quit(); sys.exit()
+                if e.key in (pygame.K_SPACE, pygame.K_RETURN):
+                    return selected
+
+        keys = pygame.key.get_pressed()
+        dx = float(keys[pygame.K_d] - keys[pygame.K_a])
+        dy = float(keys[pygame.K_s] - keys[pygame.K_w])
+        if dx and dy:
+            dx *= 0.7071; dy *= 0.7071
+        px = max(PLAYER_R, min(WIDTH  - PLAYER_R, px + dx * PLAYER_SPD))
+        py = max(PLAYER_R, min(HEIGHT - PLAYER_R, py + dy * PLAYER_SPD))
+
+        # Touch detection — auto-confirm on contact
+        for i, sx in enumerate(skin_xs):
+            if (px - sx) ** 2 + (py - skin_y) ** 2 < hit_r ** 2:
+                return i
+
+        screen.fill(BG)
+
+        title = F_BIG.render("Choose Your Skin", True, C_WHITE)
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 22))
+        hint = F_SM.render("Walk into a skin   —   SPACE to keep default", True, C_DIM)
+        screen.blit(hint, (WIDTH // 2 - hint.get_width() // 2, 64))
+
+        for i, sx in enumerate(skin_xs):
+            skin   = SKINS[i]
+            is_sel = (i == selected)
+
+            # Glow ring for pre-selected skin
+            if is_sel:
+                pygame.draw.circle(screen, (45, 55, 80), (sx, skin_y), SKIN_R + 12)
+
+            # Hit-range indicator (faint)
+            pygame.draw.circle(screen, (35, 45, 62), (sx, skin_y), hit_r, 1)
+
+            # Skin preview
+            draw_skin_shape(screen, skin, sx, skin_y, SKIN_R)
+
+            # Name label
+            col = C_WHITE if is_sel else C_DIM
+            lbl = F_TINY.render(skin['name'], True, col)
+            screen.blit(lbl, (sx - lbl.get_width() // 2, skin_y + SKIN_R + 10))
+
+        # Player character (uses selected skin)
+        draw_skin_shape(screen, SKINS[selected], int(px), int(py), PLAYER_R)
+
+        tip = F_TINY.render("WASD — move", True, C_DIM)
+        screen.blit(tip, (WIDTH // 2 - tip.get_width() // 2, HEIGHT - 20))
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def class_select_screen(skin_idx=4):
     card_w, card_h = 220, 280
     gap     = 60
     total_w = card_w * 2 + gap
     ox      = WIDTH  // 2 - total_w // 2
     oy      = HEIGHT // 2 - card_h // 2
 
-    mage_rect     = pygame.Rect(ox,              oy, card_w, card_h)
+    mage_rect     = pygame.Rect(ox,               oy, card_w, card_h)
     assassin_rect = pygame.Rect(ox + card_w + gap, oy, card_w, card_h)
 
     selected = None
@@ -536,29 +635,30 @@ def class_select_screen():
         hint = F_SM.render("Press  1 / 2   or   click a card", True, C_DIM)
         screen.blit(hint, (WIDTH // 2 - hint.get_width() // 2, oy - 32))
 
-        # Mage card
+        # --- Mage card ---
         mc = (60, 70, 110) if hover_mage else (40, 48, 78)
         pygame.draw.rect(screen, mc, mage_rect, border_radius=10)
         pygame.draw.rect(screen, C_OUTLINE, mage_rect, 2, border_radius=10)
         lbl = F_MED.render("[1]  THE CHOSEN BALL", True, C_WHITE)
         screen.blit(lbl, (mage_rect.centerx - lbl.get_width() // 2, mage_rect.y + 14))
         pcy = mage_rect.y + 88
-        pygame.draw.circle(screen, C_PLAYER,  (mage_rect.centerx, pcy), PLAYER_R)
-        pygame.draw.circle(screen, C_OUTLINE, (mage_rect.centerx, pcy), PLAYER_R, 2)
+        draw_skin_shape(screen, SKINS[skin_idx], mage_rect.centerx, pcy, PLAYER_R)
         for i, s in enumerate(["Normal speed", "Ranged projectiles",
                                 "3 charges", "Parry (F) — 4s CD", "I-frames: up to 2s"]):
             screen.blit(F_TINY.render(s, True, C_DIM),
                         (mage_rect.x + 12, mage_rect.y + 118 + i * 24))
 
-        # Assassin card
+        # --- Assassin card ---
         ac = (65, 40, 90) if hover_ass else (44, 28, 62)
         pygame.draw.rect(screen, ac, assassin_rect, border_radius=10)
         pygame.draw.rect(screen, C_ASSASSIN_OUT, assassin_rect, 2, border_radius=10)
         lbl2 = F_MED.render("[2]  ASSASSIN", True, C_ASSASSIN_OUT)
         screen.blit(lbl2, (assassin_rect.centerx - lbl2.get_width() // 2, assassin_rect.y + 14))
         pcy2 = assassin_rect.y + 88
-        pygame.draw.circle(screen, C_ASSASSIN,     (assassin_rect.centerx, pcy2), PLAYER_R)
-        pygame.draw.circle(screen, C_ASSASSIN_OUT, (assassin_rect.centerx, pcy2), PLAYER_R, 2)
+        skin = SKINS[skin_idx]
+        ass_c = C_ASSASSIN     if skin['id'] == 'default' else skin['color']
+        ass_o = C_ASSASSIN_OUT if skin['id'] == 'default' else skin['outline']
+        draw_skin_shape(screen, skin, assassin_rect.centerx, pcy2, PLAYER_R, ass_c, ass_o)
         for i, s in enumerate(["1.5x speed", "Dagger throw (LMB)",
                                 "Range: ~14 radii", "No parry", "I-frames: 0.35s max"]):
             screen.blit(F_TINY.render(s, True, (180, 150, 210)),
@@ -576,9 +676,10 @@ def main():
         overlay(screen, "BOSS FIGHT", "Press any key to begin", C_YELLOW)
         wait_for_key()
 
-        player_class = class_select_screen()
+        skin_idx     = skin_select_screen()
+        player_class = class_select_screen(skin_idx)
 
-        player    = Player(player_class)
+        player    = Player(player_class, skin_idx)
         boss      = Boss()
         squares   = make_squares(boss.hp)
         bullets   = []
