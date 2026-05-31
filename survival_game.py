@@ -355,14 +355,13 @@ def draw_hud(surf, player, boss):
         cd_lbl = F_TINY.render(f"LMB {secs}s", True, C_DIM)
         surf.blit(cd_lbl, (rx, ry + 6))
 
-    # --- Boss hearts (top-right, smaller to fit 10) ---
-    bhs, bhg = 18, 4
-    for i in range(BOSS_MAX_HP):
-        col = C_HEART if i < boss.hp else C_HEART_E
-        bx  = WIDTH - 14 - (BOSS_MAX_HP - i) * (bhs + bhg) + bhs // 2
-        draw_heart(surf, bx, hy + bhs // 2, bhs, col)
-    boss_lbl = F_TINY.render("BOSS", True, C_DIM)
-    surf.blit(boss_lbl, (WIDTH - 14 - boss_lbl.get_width(), hy + bhs + 5))
+    # --- Boss HP bar (top-right) ---
+    bar_w, bar_h = 200, 14
+    bx_hp = WIDTH - 14 - bar_w
+    pygame.draw.rect(surf, (70, 70, 70), (bx_hp, hy, bar_w, bar_h))
+    pygame.draw.rect(surf, C_HEART, (bx_hp, hy, int(bar_w * boss.hp / BOSS_MAX_HP), bar_h))
+    boss_lbl = F_TINY.render(f"BOSS  {boss.hp}/{BOSS_MAX_HP}", True, C_DIM)
+    surf.blit(boss_lbl, (WIDTH - 14 - boss_lbl.get_width(), hy + bar_h + 3))
 
     # --- Parry bar (center-bottom) ---
     bw, bh = 130, 10
