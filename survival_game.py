@@ -540,7 +540,7 @@ def class_select_screen():
         mc = (60, 70, 110) if hover_mage else (40, 48, 78)
         pygame.draw.rect(screen, mc, mage_rect, border_radius=10)
         pygame.draw.rect(screen, C_OUTLINE, mage_rect, 2, border_radius=10)
-        lbl = F_MED.render("[1]  MAGE", True, C_WHITE)
+        lbl = F_MED.render("[1]  THE CHOSEN BALL", True, C_WHITE)
         screen.blit(lbl, (mage_rect.centerx - lbl.get_width() // 2, mage_rect.y + 14))
         pcy = mage_rect.y + 88
         pygame.draw.circle(screen, C_PLAYER,  (mage_rect.centerx, pcy), PLAYER_R)
