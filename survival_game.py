@@ -362,7 +362,7 @@ class Dagger:
         tail_x = int(self.x - math.cos(angle) * hlen)
         tail_y = int(self.y - math.sin(angle) * hlen)
         pygame.draw.line(surf, C_DAGGER, (tail_x, tail_y), (tip_x, tip_y), 3)
-        pygame.draw.circle(surf, (255, 240, 150), (int(self.x), int(self.y)), max(1, self.r // 2))
+        pygame.draw.circle(surf, (200, 200, 210), (int(self.x), int(self.y)), max(1, self.r // 2))
 
 
 def make_squares(boss_hp):
