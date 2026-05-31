@@ -559,8 +559,8 @@ def class_select_screen():
         pcy2 = assassin_rect.y + 88
         pygame.draw.circle(screen, C_ASSASSIN,     (assassin_rect.centerx, pcy2), PLAYER_R)
         pygame.draw.circle(screen, C_ASSASSIN_OUT, (assassin_rect.centerx, pcy2), PLAYER_R, 2)
-        for i, s in enumerate(["2x speed", "Dagger throw (LMB)",
-                                "Range: ~7 radii", "No parry", "I-frames: 0.5s max"]):
+        for i, s in enumerate(["1.5x speed", "Dagger throw (LMB)",
+                                "Range: ~14 radii", "No parry", "I-frames: 0.35s max"]):
             screen.blit(F_TINY.render(s, True, (180, 150, 210)),
                         (assassin_rect.x + 12, assassin_rect.y + 118 + i * 24))
 
